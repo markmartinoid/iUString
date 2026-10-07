@@ -4,15 +4,31 @@
 #ifndef _iString_H
 #define _iString_H
 
+#include <cstdlib>   // для malloc/realloc/free
+#include <cstring>   // для memcpy/memmove/memset
+#include <cwctype>   // для std::towupper и std::towlower (кроссплатформенный регистр)
+#include <codecvt>   // для кроссплатформенной конвертации UTF-8 / UTF-16
+#include <locale>    // для wstring_convert
+
+// Заменяем специфичный для Windows ULONGLONG на стандартный тип C++
+typedef unsigned long long i_uint64; 
+
 #ifndef _StringType_DEFINED
 #ifdef _WINDOWS_
-typedef wchar_t  iwchar_t;
-#endif//   _WINDOWS_
-#ifndef _WINDOWS_
+    typedef wchar_t iwchar_t;
+#else
+    // Для совместимости, если Windows не определен
+    typedef wchar_t iwchar_t; 
+    // Вместо Windows-типов UINT используем стандартные
+    typedef unsigned int UINT;
+    #define CP_ACP 0
+    #define CP_UTF8 65001
+#endif
+
 typedef unsigned short StringType;
-#endif//   _WINDOWS_
 #define _StringType_DEFINED
 #endif
+
 
 
 #ifdef _iSTR_USE_iMemMan 
@@ -246,7 +262,7 @@ unsigned int Length;
 unsigned int var_uint;
 public:
 //bool CanIncreaseMemory;
-enum exception { MEMFAIL,OUTOFBOUND,TOBIGSIZE }; 
+enum exception { MEMFAIL,OUTOFBOUND,TOBIGSIE }; 
 
  iString(unsigned int length=0)
  { 
