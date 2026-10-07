@@ -85,7 +85,7 @@ for(unsigned int i=0;i<=str_max_index;i++)
  if(str[i_str]==value_name[i_strSearch]){i_strSearch++;}else{i_strSearch=0;}
  }
 if(i_str>str_max_index){return 0;}
-if(i_strSearch=value_name_LENGTH) {return 0;}
+if(i_strSearch==value_name_LENGTH) {return 0;}
 while((str[i_str]==' ')||(str[i_str]=='=')){i_str++;if(i_str>str_max_index){return 0;}}
 i_strSearch=0; //now it is value max_index 
 for(unsigned int i=i_str;i<=str_max_index;i++)
@@ -246,7 +246,7 @@ unsigned int Length;
 unsigned int var_uint;
 public:
 //bool CanIncreaseMemory;
-enum exception { MEMFAIL,OUTOFBOUND,TOBIGSIE }; 
+enum exception { MEMFAIL,OUTOFBOUND,TOBIGSIZE }; 
 
  iString(unsigned int length=0)
  { 
@@ -661,7 +661,7 @@ return (*this);
 
 const iString<StringType>& ReplaceCharAt(unsigned int pos,const StringType* ReplacePattern)
 {
-if(SearchPattern==NULL){return *this;}
+if(ReplacePattern==NULL){return *this;}
 if(pos>=Length){return *this;}
 unsigned int ReplacePatternLength= iStrLen<StringType>(ReplacePattern);
  if(ReplacePatternLength==1)
