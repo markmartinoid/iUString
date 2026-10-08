@@ -1,3 +1,4 @@
+///// // Mark Martin 2007-2025 all rights reserved markmartinoid@gmail.com 
 #pragma once
 #ifndef _IMEMMAN_H
 #define _IMEMMAN_H
@@ -77,10 +78,11 @@ enum exception { MEMFAIL };
 {
 TotalAllocated=0;
 if(EstimatedChunkCount==0){EstimatedChunkCount=1;}
-achunk.Allocate(EstimatedChunkCount);   
+achunk.Allocate(EstimatedChunkCount);  
+ReUseMemory=reUseMemory;
 if(ReUseMemory){aFreeBlock.Allocate(EstimatedBlockCountForReUseMemory);};  
 ActiveChunkIndex=0;
-ReUseMemory=reUseMemory;
+
 if(PreallocationSize!=0){setMemSize(PreallocationSize);}
 KGrow=kGrow;
 }
@@ -92,55 +94,91 @@ KGrow=kGrow;
 
 
 
-void getmem(void* buffer,size_t Size)
+void getmem(void*& buffer, size_t Size) // Передаем buffer по ссылке (&), чтобы вернуть адрес наружу
 {
+    if (ReUseMemory)
+    {
+        unsigned int count = aFreeBlock.GetCount();
+        if (count != 0)
+        {
+            // Классический бинарный поиск лучшего подходящего блока (Best Fit)
+            int low = 0;
+            int high = (int)count - 1;
+            int bestIdx = -1;
 
-if(ReUseMemory)
-{
-unsigned int xPos=aFreeBlock.GetCount();
-if(xPos!=0)
-{
-xPos<<=1;
-unsigned int Step=xPos;
-if(Step>1){Step<<=1;}
-while(Step>0)
- {
- if(Size>aFreeBlock[xPos].Size)
-  { 
-  xPos+=Step;
-  }else{
-  if(Step==1){break;}
-  if(Size==aFreeBlock[xPos].Size){break;}
-  xPos-=Step;
-  }
- Step<<=1;
- if(xPos>=aFreeBlock.GetCount())
-  {xPos=aFreeBlock.GetCount()-1;}
- };
-if(aFreeBlock[xPos].Size>=Size)
- {  
- buffer=(PCHAR)achunk[aFreeBlock[xPos].ChunkIndex].pointer+aFreeBlock[xPos].Position;
- ((iMemManHeader*)buffer)->ChunkIndex=aFreeBlock[xPos].ChunkIndex;
- ((iMemManHeader*)buffer)->Size=aFreeBlock[xPos].Size;
- buffer=(iMemManHeader*)buffer+1;
- return;
- }
-}//if(xPos!=0)   aFreeBlock.GetCount()>0
-}//if ReUseMemory
+            while (low <= high)
+            {
+                int mid = low + (high - low) / 2;
 
-for(unsigned int i=ActiveChunkIndex;i<achunk.GetCount();i++)
-{
- if((achunk[i].Size-achunk[i].FreePosition)>=(Size+sizeof(iMemManHeader)))
- {
- iMemManHeader* h=(iMemManHeader*)achunk[i].pointer+achunk[i].FreePosition;
- h->ChunkIndex=i;
- h->Size=Size;
- buffer=h+1;      
- achunk[i].FreePosition+=Size+sizeof(iMemManHeader);
- if(achunk[i].FreePosition=achunk[i].Size){ActiveChunkIndex++;}
- return;
- }
+                if (aFreeBlock[mid].Size >= Size)
+                {
+                    bestIdx = mid;     // Блок подходит, но ищем дальше влево, вдруг есть блок еще ближе к Size
+                    high = mid - 1;
+                }
+                else
+                {
+                    low = mid + 1;     // Блок слишком мал, ищем в правой половине
+                }
+            }
+
+            // Если подходящий свободный блок найден
+            if (bestIdx != -1)
+            {
+                // Вычисляем физический адрес в памяти чанка (кроссплатформенный char*)
+                char* chunkPtr = (char*)achunk[aFreeBlock[bestIdx].ChunkIndex].pointer;
+                buffer = chunkPtr + aFreeBlock[bestIdx].Position;
+
+                // Записываем заголовок менеджера памяти
+                ((iMemManHeader*)buffer)->ChunkIndex = aFreeBlock[bestIdx].ChunkIndex;
+                ((iMemManHeader*)buffer)->Size = aFreeBlock[bestIdx].Size;
+
+                // Сдвигаем указатель buffer вперед, чтобы пользователь получил чистую память после заголовка
+                buffer = (iMemManHeader*)buffer + 1;
+
+                // Удаляем использованный блок из списка свободных с помощью вашего метода Delete
+                aFreeBlock.Delete(bestIdx); 
+                return;
+            }
+        }
+    }
+
+    // Если повторно использовать нечего, выделяем память из активных чанков
+    for (unsigned int i = ActiveChunkIndex; i < achunk.GetCount(); i++)
+    {
+        if ((achunk[i].Size - achunk[i].FreePosition) >= (Size + sizeof(iMemManHeader)))
+        {
+            // Вычисляем адрес нового блока с учетом смещения
+            char* chunkPtr = (char*)achunk[i].pointer;
+            iMemManHeader* h = (iMemManHeader*)(chunkPtr + achunk[i].FreePosition);
+            
+            h->ChunkIndex = i;
+            h->Size = Size;
+            
+            buffer = h + 1; // Возвращаем указатель на область ПОСЛЕ заголовка
+            
+            achunk[i].FreePosition += Size + sizeof(iMemManHeader);
+            
+            if (achunk[i].FreePosition == achunk[i].Size) 
+            {
+                ActiveChunkIndex++;
+            }
+            return;
+        }
+    }
+
+    // Если свободного места не осталось ни в одном чанке, расширяем пул памяти
+    size_t add = Size + sizeof(iMemManHeader);
+    if ((size_t)((KGrow + 1.0) * TotalAllocated) > add) 
+    {
+        add = (size_t)((KGrow + 1.0) * TotalAllocated);
+    }
+    
+    setMemSize(add);
+    
+    // Рекурсивная попытка выделить память в свежесозданном чанке
+    getmem(buffer, Size);
 }
+
 
 //add mem
 size_t add=Size+sizeof(iMemManHeader); 
@@ -166,31 +204,57 @@ throw MEMFAIL;
 
 void freemem(void* buffer)
 {
-if(!ReUseMemory){return;}
+    if (!buffer) return;
 
-iMemManHeader* h=(iMemManHeader*)buffer-1;
+    // Извлекаем заголовок менеджера памяти, который находится прямо ПЕРЕД пользовательским буфером
+    iMemManHeader* h = (iMemManHeader*)buffer - 1;
 
-unsigned int xPos=aFreeBlock.GetCount();
-xPos<<=1;
-unsigned int Step=xPos;
-if(Step>1){Step<<=1;}
-while(Step>0)
- {
- if(h->Size>aFreeBlock[xPos].Size)
-  { 
-  xPos+=Step;
-  }else{
-  if(Step==1){break;}
-  if(h->Size==aFreeBlock[xPos].Size){break;}
-  xPos-=Step;
-  }
- Step<<=1;
- if(xPos>=aFreeBlock.GetCount())
-  {xPos=aFreeBlock.GetCount()-1;}
- };
-iMemManBlock b; b.ChunkIndex=h->ChunkIndex;b.Size=h->Size;b.Position=((PCHAR)h-(PCHAR)achunk[h->ChunkIndex].pointer);
-aFreeBlock.Insert(b,xPos);
+    if (ReUseMemory)
+    {
+        // Вычисляем физическую позицию освобождаемого блока внутри чанка
+        char* chunkStart = (char*)achunk[h->ChunkIndex].pointer;
+        char* blockStart = (char*)h;
+        size_t position = blockStart - chunkStart;
+
+        // Создаем запись о новом свободном блоке
+        iFreeBlock newBlock;
+        newBlock.ChunkIndex = h->ChunkIndex;
+        newBlock.Size = h->Size;
+        newBlock.Position = position;
+
+        unsigned int count = aFreeBlock.GetCount();
+        
+        // Бинарный поиск правильной позиции для вставки (чтобы массив aFreeBlock оставался отсортирован по Size)
+        int low = 0;
+        int high = (int)count - 1;
+        int insertIdx = count; // По умолчанию вставляем в конец
+
+        while (low <= high)
+        {
+            int mid = low + (high - low) / 2;
+
+            if (aFreeBlock[mid].Size >= newBlock.Size)
+            {
+                insertIdx = mid; // Нашли место, где блок >= нашего, но ищем дальше влево для точной позиции
+                high = mid - 1;
+            }
+            else
+            {
+                low = mid + 1;
+            }
+        }
+
+        // Вставляем блок в отсортированную позицию
+        // Примечание: Проверьте, как в вашем iDynArray называется метод вставки. 
+        // Обычно это Insert(insertIdx, newBlock). Если метода Insert нет, используйте код ниже:
+        aFreeBlock.Insert(insertIdx, newBlock); 
+        return;
+    }
+
+    // Если ReUseMemory отключен, память просто "утекает" до сброса всего менеджера,
+    // так как линейный аллокатор не умеет двигать FreePosition назад для произвольных блоков.
 }
+
 
 
 void setMemSize(size_t newSize,bool AllowRelease=false)
