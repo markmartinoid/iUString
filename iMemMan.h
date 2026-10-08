@@ -88,9 +88,18 @@ KGrow=kGrow;
 }
 
 
- ~iMemMan(void)
- {
- }
+~iMemMan()
+{
+    for (unsigned int i = 0; i < achunk.GetCount(); i++)
+    {
+        if (achunk[i].pointer != NULL)
+        {
+            free(achunk[i].pointer);
+            achunk[i].pointer = NULL;
+        }
+    }
+}
+
 
 
 
@@ -257,45 +266,78 @@ void freemem(void* buffer)
 
 
 
-void setMemSize(size_t newSize,bool AllowRelease=false)
+void setMemSize(size_t newSize, bool AllowRelease = false)
 {
-if(newSize>TotalAllocated)
-{
- size_t TotalAdd=newSize-TotalAllocated;
- iMemManChunk chunk;
- int Attempt=1;
+    if (newSize > TotalAllocated)
+    {
+        size_t TotalAdd = newSize - TotalAllocated;
+        iMemManChunk chunk;
+        int Attempt = 0;
 
+        chunk.Size = TotalAdd;
+        while ((TotalAdd > 0) && (chunk.Size > 0) && (Attempt < 1024)) 
+        {
+            // Используем стандартное кроссплатформенное приведение к char* вместо PCHAR
+            chunk.pointer = (char*)malloc(chunk.Size);
+            
+            if (chunk.pointer == NULL)
+            {
+                chunk.Size = (size_t)(chunk.Size / 1.2);
+                Attempt++;
+            }
+            else
+            {
+                TotalAdd -= chunk.Size;
+                TotalAllocated += chunk.Size;
+                chunk.FreePosition = 0;
+                achunk.Add(chunk); // Добавляем новый успешный чанк в массив
+            }
+        }
 
- Attempt=0; 
- chunk.Size=TotalAdd;
- while ((TotalAdd>0)&&(chunk.Size>0)&&(Attempt<1024)) 
-  {
-  chunk.pointer=(PCHAR)malloc(chunk.Size);
-  if(chunk.pointer==NULL)
-   {
-   chunk.Size=(size_t)(chunk.Size/1.2);Attempt++;
-   }else{
-   TotalAdd-=chunk.Size;TotalAllocated+=chunk.Size;chunk.FreePosition=0;achunk.Add(chunk);
-   }
-  };
- if(TotalAdd!=0){throw MEMFAIL;}
- }else{ // if(newSize>TotalAllocated)
- if(newSize==TotalAllocated){return ;}
- if(AllowRelease)
-  {
-  size_t TotalFree=TotalAllocated-newSize;
-  unsigned int remove_chunks=0;
-  for(unsigned int i=achunk.GetCount()-1;i>=0;i--)
-   {
-    if(achunk[i].Size>TotalFree){break;}
-    if(achunk[i].pointer!=NULL){free(((void*)(achunk[i].pointer)));achunk[i].pointer=NULL;TotalFree-=achunk[i].Size;TotalAllocated-=achunk[i].Size;remove_chunks++;}
-   }
-  if(remove_chunks!=0){achunk.SetCount(achunk.GetCount()-remove_chunks);}
-  }//if(AllowRelease)
- }//else if(newSize>TotalAllocated)
-
-
+        // Если не удалось выделить всю запрошенную память
+        if (TotalAdd != 0)
+        {
+            throw MEMFAIL;
+        }
+    }
+    else // if (newSize <= TotalAllocated)
+    { 
+        if (newSize == TotalAllocated) { return; }
+        
+        if (AllowRelease)
+        {
+            size_t TotalFree = TotalAllocated - newSize;
+            
+            // Важно: используем знаковый int, чтобы i >= 0 отработало корректно!
+            // И идем строго с конца массива чанков
+            int lastIndex = (int)achunk.GetCount() - 1;
+            
+            for (int i = lastIndex; i >= 0; i--)
+            {
+                if (achunk[i].Size > TotalFree) { break; }
+                
+                if (achunk[i].pointer != NULL)
+                {
+                    free(achunk[i].pointer);
+                    achunk[i].pointer = NULL;
+                    
+                    TotalFree -= achunk[i].Size;
+                    TotalAllocated -= achunk[i].Size;
+                    
+                    // Безопасно удаляем именно этот конкретный элемент с конца
+                    achunk.Delete(i); 
+                }
+            }
+            
+            // Корректируем ActiveChunkIndex, если он указывал на удаленные чанки
+            if (ActiveChunkIndex >= achunk.GetCount())
+            {
+                ActiveChunkIndex = (achunk.GetCount() > 0) ? achunk.GetCount() - 1 : 0;
+            }
+        }
+    }
 }
+
 
 
 size_t getMemSize()
