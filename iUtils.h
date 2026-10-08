@@ -22,7 +22,7 @@
 #endif
 
  /*
- void  ShowMessageW(DWORD dw)
+ void  ShowMessageW(uint32_t dw)
 {
 WCHAR buffer[256];
 FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM,0,dw,0,&buffer[0],256,0);
@@ -36,29 +36,29 @@ MessageBoxW(0 ,&buffer[0],L"",0);
 
 
 
-bool iFileCheckSumW(const wchar_t* FileName, DWORD *lpSum)
+bool iFileCheckSumW(const wchar_t* FileName, uint32_t *lpSum)
 {
 
 if(lpSum==0)return false;
 HANDLE h=CreateFileW(FileName,GENERIC_READ,FILE_SHARE_READ ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,0);
 if (h==INVALID_HANDLE_VALUE)return false;
 
-DWORD FileSizeHigh=0;
-DWORD Size= GetFileSize(h,&FileSizeHigh);
+uint32_t FileSizeHigh=0;
+uint32_t Size= GetFileSize(h,&FileSizeHigh);
 Size=Size>>2;
 Size=Size<<2;
 
  
 HANDLE memHeap=GetProcessHeap();
-DWORD* buffer=(DWORD*)HeapAlloc(memHeap, HEAP_ZERO_MEMORY, Size);
+uint32_t* buffer=(uint32_t*)HeapAlloc(memHeap, HEAP_ZERO_MEMORY, Size);
 if (buffer==NULL) {CloseHandle(h);return false;}
 
-DWORD dw=0;
+uint32_t dw=0;
 if (0==ReadFile (h,buffer,Size,&dw,NULL)){HeapFree(memHeap,0,buffer);CloseHandle(h);return false;} 
 
 *lpSum=0;
 Size=Size>>2;
-for(DWORD i=0;i<Size;i++) 
+for(uint32_t i=0;i<Size;i++) 
 	(*lpSum)+=buffer[i];
 
 
@@ -68,7 +68,7 @@ return true;
 }
 
 //retvalSizeBytes incl. null
-template <typename StringType>  bool iChangeFileExt(const StringType* str,const StringType* NewExt,StringType* retval,const DWORD retvalSizeCharacters) 
+template <typename StringType>  bool iChangeFileExt(const StringType* str,const StringType* NewExt,StringType* retval,const uint32_t retvalSizeCharacters) 
 {
 unsigned int len= iStrLen<StringType>(str);
 unsigned int NewExt_pos=len;
@@ -89,7 +89,7 @@ return retvalue;
 
 
 //retvalSizeBytes incl. null
-template <typename StringType>  bool iExtractFilePath(const StringType* str,StringType* retval,const DWORD retvalSizeCharacters) 
+template <typename StringType>  bool iExtractFilePath(const StringType* str,StringType* retval,const uint32_t retvalSizeCharacters) 
 {
 unsigned int len= iStrLen<StringType>(str);
 for(unsigned int i=(len-1);i>0;i--)
@@ -113,7 +113,7 @@ return true;
 
 
 
-int CALLBACK iIsFontInstalledW_CALLBACK(CONST LOGFONTW *lpelf,CONST TEXTMETRICW *lpntm,DWORD FontType,LPARAM lParam)	
+int CALLBACK iIsFontInstalledW_CALLBACK(CONST LOGFONTW *lpelf,CONST TEXTMETRICW *lpntm,uint32_t FontType,LPARAM lParam)	
 {
 *((bool*)lParam)=true;
 
@@ -143,7 +143,7 @@ return true;
 
 bool iDirectoryExistsW(const wchar_t* filename)
 {
-DWORD  Code = GetFileAttributesW(filename);
+uint32_t  Code = GetFileAttributesW(filename);
 return (Code != 0xFFFFFFFF) && (FILE_ATTRIBUTE_DIRECTORY & Code);
 }
 

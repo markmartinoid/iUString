@@ -827,7 +827,7 @@ ioctlsocket Controls the I/O mode of a socket.
 
 setsockopt
   SO_RCVBUF SO_SNDBUF SO_REUSEADDR
-  SO_RCVTIMEO SO_SNDTIMEO      DWORD Sets the timeout, in milliseconds, for blocking receive calls 
+  SO_RCVTIMEO SO_SNDTIMEO      uint32_t Sets the timeout, in milliseconds, for blocking receive calls 
   SO_RCVLOWAT SO_SNDLOWAT sets the minimum number of bytes to process for socket output operations.
 
 WSAIoctl

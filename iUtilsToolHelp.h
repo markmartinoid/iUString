@@ -11,7 +11,7 @@
 
 #include <tchar.h>
 
-int GetProcessModuleENTRY (DWORD dwPID,DWORD dwModuleID,LPMODULEENTRY32 lpMe32)
+int GetProcessModuleENTRY (uint32_t dwPID,uint32_t dwModuleID,LPMODULEENTRY32 lpMe32)
 {
 bool bFound=false;
  
@@ -32,7 +32,7 @@ return 0;
 }
 
 
-int GetProcessModuleENTRYW (DWORD dwPID,DWORD dwModuleID,LPMODULEENTRY32W lpMe32)
+int GetProcessModuleENTRYW (uint32_t dwPID,uint32_t dwModuleID,LPMODULEENTRY32W lpMe32)
 {
 bool bFound=false;
  

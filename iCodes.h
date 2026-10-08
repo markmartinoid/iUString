@@ -109,7 +109,7 @@
 
 
 
-char* IC_ErrorDescription(DWORD Code)
+char* IC_ErrorDescription(uint32_t Code)
 {
 switch (Code)
 {

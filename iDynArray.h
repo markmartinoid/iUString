@@ -28,7 +28,7 @@ private:
 
 public:
   el* Array;
-  DWORD Options;
+  uint32_t Options;
 
   float kGrow;
   enum exception { MEMFAIL,OUTOFBOUND }; 
@@ -152,37 +152,53 @@ void Insert(const el &item, unsigned int index)
         if (Options & iDynArrayAUTOADD) { SetCount(index + 1); }
         else { throw OUTOFBOUND; }
     }
-    else
-    {
-        if (index == Count) 
-        { 
-            SetCount(Count + 1); 
-            memcpy(&Array[index], &item, sizeof(el)); 
-            return; 
-        }
-        
-        // Запоминаем старый размер для правильного смещения памяти
-        unsigned int oldLength = Count - index; 
-        SetCount(Count + 1);
-        
-        // Сдвигаем элементы вправо, используя сохраненное старое количество
-        memmove(&Array[index + 1], &Array[index], sizeof(el) * oldLength);
+    
+    // Создаем локальную копию элемента на стеке ДО изменения размера массива.
+    // Если realloc сместит Array в памяти, наша копия на стеке останется невредимой.
+    el local_item;
+    memcpy(&local_item, &item, sizeof(el));
+
+    if (index == Count) 
+    { 
+        SetCount(Count + 1); 
+        memcpy(&Array[index], &local_item, sizeof(el)); 
+        return; 
     }
     
-    // Копируем сам элемент на освободившееся место
-    memcpy(&Array[index], &item, sizeof(el));
+    // Запоминаем количество элементов для сдвига до изменения Count
+    unsigned int oldLength = Count - index; 
+    SetCount(Count + 1);
+    
+    // Сдвигаем элементы вправо
+    memmove(&Array[index + 1], &Array[index], sizeof(el) * oldLength);
+    
+    // Копируем сохраненный элемент на освободившееся место
+    memcpy(&Array[index], &local_item, sizeof(el));
 }
+
 
 
 void Add(const el &item)
 {
-if(Count<=AllocatedCount)
- {
- Allocate((unsigned int)((Count+1)*(1+kGrow)));
- }
-memcpy(&Array[Count],&item,sizeof(el)); 
-Count++;
+    // 1. Сначала делаем локальную копию элемента на стеке.
+    // Это защищает нас, если в метод передали ссылку на элемент из этого же массива
+    // (например: myArray.Add(myArray[0])), так как realloc может изменить адрес Array.
+    el local_item;
+    memcpy(&local_item, &item, sizeof(el));
+
+    // 2. Проверяем, хватает ли выделенной памяти. 
+    // Обратите внимание: в оригинальном коде было '<=', что приводило к аллокации, 
+    // даже когда Count == AllocatedCount. Правильное условие нехватки места: '>='
+    if (Count >= AllocatedCount)
+    {
+        Allocate((unsigned int)((Count + 1) * (1.0f + kGrow)));
+    }
+
+    // 3. Безопасно копируем элемент из стека в массив и увеличиваем счетчик
+    memcpy(&Array[Count], &local_item, sizeof(el));
+    Count++;
 }
+
 
 void Delete(unsigned int index)
 {
@@ -214,59 +230,6 @@ el* getPointer()
 {
     return Array;  
 }
-
-
-
-
-void freemem(void* buffer)
-{
-    if (!buffer) return;
-
-    // Извлекаем заголовок менеджера памяти, который находится прямо ПЕРЕД пользовательским буфером
-    iMemManHeader* h = (iMemManHeader*)buffer - 1;
-
-    if (ReUseMemory)
-    {
-        // Вычисляем физическую позицию освобождаемого блока внутри чанка (кроссплатформенный char*)
-        char* chunkStart = (char*)achunk[h->ChunkIndex].pointer;
-        char* blockStart = (char*)h;
-        size_t position = blockStart - chunkStart;
-
-        // Создаем запись о новом свободном блоке
-        iFreeBlock newBlock;
-        newBlock.ChunkIndex = h->ChunkIndex;
-        newBlock.Size = h->Size;
-        newBlock.Position = position;
-
-        unsigned int count = aFreeBlock.GetCount();
-        
-        // Бинарный поиск правильной позиции для вставки (чтобы массив aFreeBlock оставался отсортирован по Size)
-        int low = 0;
-        int high = (int)count - 1;
-        int insertIdx = count; // По умолчанию вставляем в конец
-
-        while (low <= high)
-        {
-            int mid = low + (high - low) / 2;
-
-            if (aFreeBlock[mid].Size >= newBlock.Size)
-            {
-                insertIdx = mid; // Нашли место, где блок >= нашего, но ищем дальше влево для точной позиции
-                high = mid - 1;
-            }
-            else
-            {
-                low = mid + 1;
-            }
-        }
-
-        // Вставляем блок в отсортированную позицию
-        // Передаем параметры строго по сигнатуре вашего iDynArray: (объект, индекс)
-        aFreeBlock.Insert(newBlock, insertIdx); 
-        return;
-    }
-}
-
 
 
 

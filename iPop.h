@@ -27,19 +27,19 @@ return &email_from[pos+1];
 
 void i_htmlspecialchars(iString<char> &str)
 {
-//Для преобразования всех HTML сущностей используйте htmlentities(). 
-//"'" (одиночная кавычка) преобразуется в '&#039;' только в режиме ENT_QUOTES. 
+//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ HTML пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ htmlentities(). 
+//"'" (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ) пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ '&#039;' пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ENT_QUOTES. 
 str.Replace("&","'&amp;");
-str.Replace("\"","'&quot;"); //в режиме ENT_NOQUOTES is not set. 
+str.Replace("\"","'&quot;"); //пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ENT_NOQUOTES is not set. 
 str.Replace("<","&lt;");
 str.Replace(">","&gt;");
 }
 void i_htmlspecialchars(iString<wchar_t> &str)
 {
-//Для преобразования всех HTML сущностей используйте htmlentities(). 
-//"'" (одиночная кавычка) преобразуется в '&#039;' только в режиме ENT_QUOTES. 
+//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ HTML пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ htmlentities(). 
+//"'" (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ) пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ '&#039;' пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ENT_QUOTES. 
 str.Replace(L"&",L"'&amp;");
-str.Replace(L"\"",L"'&quot;"); //в режиме ENT_NOQUOTES is not set. 
+str.Replace(L"\"",L"'&quot;"); //пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ENT_NOQUOTES is not set. 
 str.Replace(L"<",L"&lt;");
 str.Replace(L">",L"&gt;");
 }
@@ -91,7 +91,7 @@ for(unsigned int i=0;i<str.Length();i++)
 #define iBASE64_FLAG_NOPAD	1
 #define iBASE64_FLAG_NOCRLF  2
 
-int iBase64EncodeGetRequiredLength(int nSrcLen, DWORD dwFlags = iBASE64_FLAG_NONE)
+int iBase64EncodeGetRequiredLength(int nSrcLen, uint32_t dwFlags = iBASE64_FLAG_NONE)
 {
 //	__int64 nSrcLen4=static_cast<__int64>(nSrcLen)*4;  ATLENSURE(nSrcLen4 <= INT_MAX);
 	
@@ -118,7 +118,7 @@ int iBase64EncodeGetRequiredLength(int nSrcLen, DWORD dwFlags = iBASE64_FLAG_NON
 	return nRet;
 }
 
-BOOL iBase64Encode(const BYTE *pbSrcData,int nSrcLen, char* szDest,int *pnDestLen,	DWORD dwFlags = iBASE64_FLAG_NONE) 
+BOOL iBase64Encode(const BYTE *pbSrcData,int nSrcLen, char* szDest,int *pnDestLen,	uint32_t dwFlags = iBASE64_FLAG_NONE) 
 {
 	static const char s_chBase64EncodingTable[64] = {
 		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
@@ -148,7 +148,7 @@ BOOL iBase64Encode(const BYTE *pbSrcData,int nSrcLen, char* szDest,int *pnDestLe
 
 		for (int j=0; j<nLen3; j++)
 		{
-			DWORD dwCurr(0);
+			uint32_t dwCurr(0);
 			for (int n=0; n<3; n++)
 			{
 				dwCurr |= *pbSrcData++;
@@ -180,7 +180,7 @@ BOOL iBase64Encode(const BYTE *pbSrcData,int nSrcLen, char* szDest,int *pnDestLe
 	nLen2 = (nSrcLen%3) ? (nSrcLen%3 + 1) : 0;
 	if (nLen2)
 	{
-		DWORD dwCurr(0);
+		uint32_t dwCurr(0);
 		for (int n=0; n<3; n++)
 		{
 			if (n<(nSrcLen%3))
@@ -224,7 +224,7 @@ if(DestCharSet=="utf-8")
 
 // iBASE64_FLAG_NONE	0   iBASE64_FLAG_NOPAD	1  iBASE64_FLAG_NOCRLF
 
-DWORD flags=iBASE64_FLAG_NOPAD|iBASE64_FLAG_NOCRLF; //iBASE64_FLAG_NOPAD
+uint32_t flags=iBASE64_FLAG_NOPAD|iBASE64_FLAG_NOCRLF; //iBASE64_FLAG_NOPAD
 
 int DestLength=iBase64EncodeGetRequiredLength(temp.GetLength()*sizeof(char), flags);
 dest.Allocate(DestLength+8+iStrLen<char>(DestCharSet),false);
@@ -296,7 +296,7 @@ gmtime_s(&newTime ,&szClock );  //localtime_r
 iString<char> str_time;str_time.Allocate(64);
 
 
-DWORD dwClock= (DWORD)szClock;
+uint32_t dwClock= (uint32_t)szClock;
 iString<char>   boundary;
 boundary.SetLength(34);
 boundary="--"; 
@@ -363,7 +363,7 @@ header+="X-Priority: 3 (Normal)";
 header+= iEOF;
 
 header+="Message-ID: <1";//.
-DWORD dwticks=GetTickCount();
+uint32_t dwticks=GetTickCount();
 str_time.Allocate(128,false);
 str_time.ClearMem();
 header+=iToString(dwticks,(char*)str_time.Buffer(),str_time.GetAllocated());//GetLength()

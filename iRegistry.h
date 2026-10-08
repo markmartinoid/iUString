@@ -45,7 +45,7 @@ bool  CreateKey()
 {
 if(key_created_or_opened==2){return true;}
 if(!keyISpredefined(hkey)){RegCloseKey(hkey);}
-DWORD dw;
+uint32_t dw;
 
 dw=RegCreateKeyExA(hkey_root,keyName.Buffer(),0, NULL,0,KEY_WRITE,NULL,&hkey,NULL) ;
 if(ERROR_SUCCESS!=dw){return false;}
@@ -69,23 +69,23 @@ return true;
 
 
 
-DWORD get(const char* SubKeyName,const char*  valueName, DWORD defaultValue)
+uint32_t get(const char* SubKeyName,const char*  valueName, uint32_t defaultValue)
 {
 if(! OpenKey(1)){return defaultValue;} 
-DWORD  dwType;
-DWORD  Data;
-DWORD  DataSize=sizeof(Data);
+uint32_t  dwType;
+uint32_t  Data;
+uint32_t  DataSize=sizeof(Data);
 if(ERROR_SUCCESS!=RegGetValueA(hkey,SubKeyName,valueName,RRF_RT_ANY|RRF_NOEXPAND,&dwType,&Data,&DataSize)){return defaultValue;} 
-if(REG_DWORD!=dwType){return defaultValue;} 
+if(REG_uint32_t!=dwType){return defaultValue;} 
 return Data;
 }
-void set(const char* SubKeyName,const char*  valueName, DWORD Value)
+void set(const char* SubKeyName,const char*  valueName, uint32_t Value)
 {
 if(! CreateKey()){return ;} 
-DWORD  DataSize=sizeof(Value);
-DWORD dw;
-//dw=RegSetValueExA(hkey,valueName,0,REG_DWORD,(BYTE*)&Value,DataSize); 
-dw=RegSetKeyValueA(hkey,SubKeyName,valueName,REG_DWORD,&Value,DataSize);
+uint32_t  DataSize=sizeof(Value);
+uint32_t dw;
+//dw=RegSetValueExA(hkey,valueName,0,REG_uint32_t,(BYTE*)&Value,DataSize); 
+dw=RegSetKeyValueA(hkey,SubKeyName,valueName,REG_uint32_t,&Value,DataSize);
 if(ERROR_SUCCESS!=dw){}       
 }
 
@@ -94,9 +94,9 @@ if(ERROR_SUCCESS!=dw){}
 bool get(const char* SubKeyName,const char*  valueName, iString<char> &result,char* defaultValue)
 {
 if(! OpenKey(1)){return false;} 
-DWORD  dwType;
-DWORD dw;
-DWORD  DataSize=0; //must include the size of the terminating null character or characters.
+uint32_t  dwType;
+uint32_t dw;
+uint32_t  DataSize=0; //must include the size of the terminating null character or characters.
 dw=RegGetValueA(hkey,SubKeyName,valueName,RRF_RT_ANY|RRF_NOEXPAND,&dwType,NULL,&DataSize);
 if((dw== ERROR_MORE_DATA)||(dw==0))
  {
@@ -112,9 +112,9 @@ return true;
 bool get(const wchar_t* SubKeyName,const wchar_t*  valueName, iString<wchar_t> &result,wchar_t* defaultValue)
 {
 if(! OpenKey(1)){return false;} 
-DWORD  dwType;
-DWORD dw;
-DWORD  DataSize=0; //must include the size of the terminating null character or characters.
+uint32_t  dwType;
+uint32_t dw;
+uint32_t  DataSize=0; //must include the size of the terminating null character or characters.
 dw=RegGetValueW(hkey,SubKeyName,valueName,RRF_RT_ANY|RRF_NOEXPAND,&dwType,NULL,&DataSize);
 if((dw== ERROR_MORE_DATA)||(dw==0))
  {
@@ -133,8 +133,8 @@ return true;
 bool set(const char* SubKeyName,const char*  valueName, char* Value)
 {
 if(! CreateKey()){return false;} 
-DWORD  DataSize=(unsigned int)strlen(Value)+sizeof(char);
-DWORD dw; 
+uint32_t  DataSize=(unsigned int)strlen(Value)+sizeof(char);
+uint32_t dw; 
 dw=RegSetKeyValueA(hkey,SubKeyName,valueName,REG_SZ,Value,DataSize);
 return (ERROR_SUCCESS==dw);       
 }
@@ -146,9 +146,9 @@ return (ERROR_SUCCESS==dw);
 __int64 get64(const char* SubKeyName,const char*  valueName, __int64 defaultValue)
 {
 if(! OpenKey(1)){return defaultValue;} 
-DWORD  dwType;
-DWORD  Data;
-DWORD  DataSize=sizeof(Data);
+uint32_t  dwType;
+uint32_t  Data;
+uint32_t  DataSize=sizeof(Data);
 if(ERROR_SUCCESS!=RegGetValueA(hkey,SubKeyName,valueName,RRF_RT_ANY|RRF_NOEXPAND,&dwType,&Data,&DataSize)){return defaultValue;} 
 if(REG_QWORD!=dwType){return defaultValue;} 
 return Data;
@@ -156,17 +156,17 @@ return Data;
 void set64(char* SubKeyName,char*  valueName, __int64 Value)
 {
 if(! CreateKey()){return ;} 
-DWORD  DataSize=sizeof(Value);
-DWORD dw;
+uint32_t  DataSize=sizeof(Value);
+uint32_t dw;
 dw=RegSetKeyValueA(hkey,SubKeyName,valueName,REG_QWORD,&Value,DataSize);
 if(ERROR_SUCCESS!=dw){}       
 }
 
 
-bool getBinary(const char* SubKeyName,const char*  valueName, char*Buffer ,DWORD  BufferSize )
+bool getBinary(const char* SubKeyName,const char*  valueName, char*Buffer ,uint32_t  BufferSize )
 {
 if(! OpenKey(1)){return false;} 
-DWORD  dwType;
+uint32_t  dwType;
 if(ERROR_SUCCESS!=RegGetValueA(hkey,SubKeyName,valueName,RRF_RT_ANY|RRF_NOEXPAND,&dwType,&Buffer,&BufferSize)){return false;} 
 if(REG_BINARY!=dwType){return false;} 
 return true;
@@ -175,11 +175,11 @@ return true;
 
 
 
-void setBinary(const char* SubKeyName,const char*  valueName, char* Value,DWORD  DataSize)
+void setBinary(const char* SubKeyName,const char*  valueName, char* Value,uint32_t  DataSize)
 {
 if(! CreateKey()){return ;} 
-DWORD dw;
-//dw=RegSetValueExA(hkey,valueName,0,REG_DWORD,(BYTE*)&Value,DataSize); 
+uint32_t dw;
+//dw=RegSetValueExA(hkey,valueName,0,REG_uint32_t,(BYTE*)&Value,DataSize); 
 dw=RegSetKeyValueA(hkey,SubKeyName,valueName,REG_BINARY,&Value,DataSize);
 if(ERROR_SUCCESS!=dw){}       
 }

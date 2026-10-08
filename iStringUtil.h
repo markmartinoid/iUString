@@ -82,17 +82,17 @@ return 0;
 
 
 //bufferCount including null character
-template <typename StringType> StringType* iToString(const DWORD i, StringType*buffer,const DWORD  bufferCount)
+template <typename StringType> StringType* iToString(const uint32_t i, StringType*buffer,const uint32_t  bufferCount)
 {
 if(bufferCount<2){return NULL;}
 memset(buffer,0,bufferCount*sizeof(StringType));
 if(i==0){buffer[0]=48;return buffer;}
-DWORD x=i;
-DWORD Chars=1;//last null
-DWORD modulo;
+uint32_t x=i;
+uint32_t Chars=1;//last null
+uint32_t modulo;
 while(x!=0)
 {
- modulo=x-(DWORD)((x/10)*10);
+ modulo=x-(uint32_t)((x/10)*10);
  x=x/10;
  
  Chars++;
@@ -103,13 +103,13 @@ return &buffer[bufferCount-Chars];
 }
 
 //bufferCount including null character
-template <typename StringType,typename IntType> StringType* iToStringScale(const IntType i, StringType*buffer,const DWORD  bufferCount,const IntType Scale,const StringType*charset)
+template <typename StringType,typename IntType> StringType* iToStringScale(const IntType i, StringType*buffer,const uint32_t  bufferCount,const IntType Scale,const StringType*charset)
 {
 if(bufferCount<2){return NULL;}
 memset(buffer,0,bufferCount*sizeof(StringType));
 if(i==0){buffer[0]=charset[0];   return buffer;}
 IntType x=i;
-DWORD Chars=1;//last null
+uint32_t Chars=1;//last null
 IntType modulo;
 while(x!=0)
 {
@@ -127,7 +127,7 @@ return &buffer[bufferCount-Chars];
 
 
 /*
-template <typename StringType> int StringToInt(const StringType *buffer, StringType*buffer,const DWORD  bufferCount)
+template <typename StringType> int StringToInt(const StringType *buffer, StringType*buffer,const uint32_t  bufferCount)
 {
 if(buffer==NULL)return 0;
 bool negative;
@@ -148,7 +148,7 @@ for(i:=0;i<12;i++)
 
 
            
-void int_to_hexstring(DWORD value, char result[9])
+void int_to_hexstring(uint32_t value, char result[9])
 {
 static char const HEXDIGITS[0x10] = {'0', '1', '2', '3', '4', '5', '6', '7','8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     int i;
@@ -165,7 +165,7 @@ static char const HEXDIGITS[0x10] = {'0', '1', '2', '3', '4', '5', '6', '7','8',
 
 
  
-void int_to_hexstring_p(DWORD value, char* result)
+void int_to_hexstring_p(uint32_t value, char* result)
 {
 static char const HEXDIGITS[0x10] = {'0', '1', '2', '3', '4', '5', '6', '7','8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     int i;
@@ -243,10 +243,10 @@ unsigned char  answer = 0;
 
 
 
-template <typename StringType> DWORD hexstring_to_int(const  StringType* str, DWORD length)
+template <typename StringType> uint32_t hexstring_to_int(const  StringType* str, uint32_t length)
 {
-DWORD  result=0;
-DWORD power=0;
+uint32_t  result=0;
+uint32_t power=0;
 for(int i=length-1;i>=0;i--)
 {
 result|=hexalpha_to_int(str[i])<<power;
@@ -256,10 +256,10 @@ return  result;
 }
 
 
-DWORD hexstring_to_intW(const  wchar_t* str,DWORD length )
+uint32_t hexstring_to_intW(const  wchar_t* str,uint32_t length )
 {
-DWORD  result=0;
-DWORD power=0;
+uint32_t  result=0;
+uint32_t power=0;
 for(int i=length-1;i>=0;i--)
 {
 result|=hexalpha_to_intW(str[i])<<power;
@@ -292,7 +292,7 @@ unsigned char  answer = 0;
 
 
 
-ULONGLONG hexstring_to_uint64(const char* str,DWORD length )
+ULONGLONG hexstring_to_uint64(const char* str,uint32_t length )
 {
 ULONGLONG  result=0;
 ULONGLONG power=0;

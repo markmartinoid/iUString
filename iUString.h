@@ -1,4 +1,4 @@
-// Mark Martin 2007-2025 all rights reserved markmartinoid@gmail.com 
+// Mark Martin 2007-2025 markmartinoid@gmail.com 
 
 #pragma once
 #ifndef _iString_H
@@ -899,12 +899,18 @@ iswspace
 
 template<class iwchar_t> iString<iwchar_t>& iString<iwchar_t>::UpperCase() 
 {
-CharUpperBuffW(data,Length);
+for (unsigned int i = 0; i < Length; i++) {
+    data[i] = (StringType)std::towupper(data[i]);
+}
+
 return *this;
 }
 template<class iwchar_t> iString<iwchar_t>& iString<iwchar_t>::LowerCase()
 {
-CharLowerBuffW(data,Length);
+for (unsigned int i = 0; i < Length; i++) {
+    data[i] = (StringType)std::towlower(data[i]);
+}
+
 return *this;
 }
 

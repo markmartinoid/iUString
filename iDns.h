@@ -359,7 +359,7 @@ buf_position+= sizeof(iDNS_QUESTION);
  HANDLE f=CreateFile(L".\\_file.txt",GENERIC_READ | GENERIC_WRITE,0,0, CREATE_ALWAYS ,FILE_ATTRIBUTE_NORMAL , NULL);
  if(f!=INVALID_HANDLE_VALUE)
  {
- DWORD NumberOfBytesWritten;
+ uint32_t NumberOfBytesWritten;
  WriteFile(f,(char*)&buf[0],buf_position,&NumberOfBytesWritten,NULL);
  CloseHandle (f);
  }
@@ -382,7 +382,7 @@ if(send(s,buf,buf_position,0)==SOCKET_ERROR ){closesocket(s);free(buf);return IC
 int ReceivedTotal=0;
 dnsrecv(s,buf,buf_size,ReceivedTotal,1);
 
-if(ReceivedTotal<sizeof(iDNS_HEADER)){free(buf);closesocket(s); return IC_ERROR_DNS; }   //DWORD dw=WSAGetLastError();
+if(ReceivedTotal<sizeof(iDNS_HEADER)){free(buf);closesocket(s); return IC_ERROR_DNS; }   //uint32_t dw=WSAGetLastError();
  
 
 
@@ -391,7 +391,7 @@ if(ReceivedTotal<sizeof(iDNS_HEADER)){free(buf);closesocket(s); return IC_ERROR_
  HANDLE f=CreateFile(".\\_file.txt",GENERIC_READ | GENERIC_WRITE,0,0, CREATE_ALWAYS ,FILE_ATTRIBUTE_NORMAL , NULL);
  if(f!=INVALID_HANDLE_VALUE)
  {
- DWORD NumberOfBytesWritten;
+ uint32_t NumberOfBytesWritten;
  WriteFile(f,(char*)&buf[0],ReceivedTotal,&NumberOfBytesWritten,NULL);
  CloseHandle (f);
  }
@@ -400,7 +400,7 @@ if(ReceivedTotal<sizeof(iDNS_HEADER)){free(buf);closesocket(s); return IC_ERROR_
 
 /*
 HANDLE f=CreateFile(".\\_file.txt",GENERIC_READ | GENERIC_WRITE,0,0, OPEN_EXISTING  ,FILE_ATTRIBUTE_NORMAL , NULL);
-DWORD NumberOfBytesWritten;
+uint32_t NumberOfBytesWritten;
 ReadFile (f, (char*)&buf[0],    286     , &NumberOfBytesWritten, NULL);
 iResult= NumberOfBytesWritten;
 */
@@ -652,7 +652,7 @@ void RetrieveDnsServers() {
 
 FIXED_INFO *pFixedInfo;
 ULONG ulOutBufLen;
-DWORD dwRetVal;
+uint32_t dwRetVal;
 IP_ADDR_STRING *pIPAddr;
 
 pFixedInfo = (FIXED_INFO *) malloc(sizeof (FIXED_INFO));
