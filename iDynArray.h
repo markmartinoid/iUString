@@ -67,6 +67,8 @@ return *this;
 }
 
 
+
+
 iDynArray(const iDynArray &a)
 {   
 Array=NULL;
