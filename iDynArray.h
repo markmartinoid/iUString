@@ -74,6 +74,17 @@ Options=a.Options;
 Allocate(a.AllocatedCount);
 memcpy(Array, a.Array, sizeof(el)*a.AllocatedCount);
 Count = a.Count;
+
+
+// Альтернативный вариант для экономии памяти при копировании:
+//Allocate(a. Count); 
+//memcpy(Array, a. Array, sizeof(el)*a. Count);
+//AllocatedCount = a. Count;
+//Count = a. Count;
+
+
+
+
 kGrow=a.kGrow;
 OnSortCompare= NULL;
 }
@@ -236,7 +247,7 @@ el* getPointer()
 
   
 
-}
+};
 
 
 
