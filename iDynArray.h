@@ -10,7 +10,7 @@
 #define  iDynArrayAUTOADD   0x00000002
 
 
-int  _OnUShortCompare(unsigned short x1,unsigned short x2)  {return (x1-x2);}
+inline int  _OnUShortCompare(unsigned short x1,unsigned short x2)  {return (x1-x2);}
 
 
 
