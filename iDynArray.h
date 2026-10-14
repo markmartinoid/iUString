@@ -31,7 +31,7 @@ public:
   uint32_t Options;
 
   float kGrow;
-  enum exception { MEMFAIL,OUTOFBOUND }; 
+  enum exception { MEMFAIL,OUTOFBOUND, OUTOFMEMORY_INT32 }; 
   typedef el& reference;
   typedef const el& const_reference;
 
@@ -56,7 +56,7 @@ return (Array[index]);
 
 
 
-el& operator = (const el &a)
+iDynArray& operator = ( const iDynArray &a )
 {
 if (this == &a) 	return *this;
 Options=a.Options;
@@ -95,13 +95,26 @@ OnSortCompare= NULL;
 
 iDynArray(unsigned int AllocateCount=0, float kGrowth=0.3 )
 {
-Array=NULL;
-Options=0;
-Count = 0;
-AllocatedCount = 0;
-kGrow=kGrowth; 
-Allocate(AllocateCount); 
-OnSortCompare= NULL;
+iDynArray(unsigned int AllocateCount = 0, float kGrowth = 0.3f)
+{
+    Array = NULL;
+    Options = 0;
+    Count = 0;
+    OnSortCompare = NULL;
+if (AllocateCount<16)AllocateCount=16;
+
+    if (kGrowth < 0.05f) kGrowth = 0.3f;
+    if (kGrowth > 128.00f) kGrowth = 128.00f;//that class for large bases
+    kGrow = kGrowth;
+
+if (AllocateCount > UINT_MAX / sizeof(el)) throw exception { MEMFAIL,OUTOFMEMORY_INT32 };
+
+    if (AllocateCount > 0)
+    {
+        Allocate(AllocateCount);
+    }
+}
+
 }
 
 
@@ -192,7 +205,7 @@ void Insert(const el &item, unsigned int index)
 }
 
 
-
+// we assuming use preemptive Allocated Count in constructor
 void Add(const el &item)
 {
     el local_item;
