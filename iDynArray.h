@@ -1,10 +1,10 @@
 #pragma once
 #ifndef _IDYNARRAY_H
 #define _IDYNARRAY_H
-
+// ©2007-2015 by Mark Martin markmartinoid@gmail.com / bug fixes by GOOGLE AI
 //creates the object on the heap(new) and one on the stack(without new).
 //Without new, it depends on where you declare it. Within a function or method, it uses stack
-
+// el Temp member variable and replacing it with a stack-allocated variable (local_temp) inside the loop, preventing potential data corruption and memory overhead by a GOOGLE AI advice
 
 #define  iDynArrayZEROINIT  0x00000001
 #define  iDynArrayAUTOADD   0x00000002
@@ -37,7 +37,7 @@ public:
 
   typedef int (* iDynArray_SORT_PROC)(const el &x1, const el &x2);
   iDynArray_SORT_PROC OnSortCompare;
-  el Temp;
+  // el Temp; removes}d coz unsave multithreaded
         
    
 const el&  operator[]( unsigned int index) const 
@@ -152,10 +152,11 @@ while (!sorted)
   {
   if(OnSortCompare(Array[i],Array[i+1])>0)
    { 
-   memcpy(&Temp,&Array[i],sizeof(el));
-   memcpy(&Array[i],&Array[i+1],sizeof(el));
-   memcpy(&Array[i+1],&Temp,sizeof(el));
-   sorted=false;
+   el local_temp; // SafeThreading Created on the stack only when swapping 
+    memcpy(&local_temp, &Array[i], sizeof(el));
+    memcpy(&Array[i], &Array[i+ 1], sizeof(el));
+    memcpy(&Array[i+ 1], &local_temp, sizeof(el));
+    sorted= false;
    }
   }
 
@@ -219,7 +220,13 @@ void Add(const el &item)
 
     if (Count >= AllocatedCount)
     {
+#ifdef IDYNARRAY_SMALL_ARRAYS
+    unsigned int newCapacity = (AllocatedCount == 0) ? 16 : (unsigned int)(AllocatedCount * (1.0f + kGrow));
+    if (newCapacity <= Count) newCapacity = Count + 1;
+    Allocate(newCapacity);
+ #else   
         Allocate((unsigned int)((Count + 1) * (1.0f + kGrow)));
+#endif        
     }
 
     memcpy(&Array[Count], &local_item, sizeof(el));
