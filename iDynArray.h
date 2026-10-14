@@ -55,16 +55,29 @@ return (Array[index]);
 
 
 
-
-iDynArray& operator = ( const iDynArray &a )
+// This goes inside your class template <class el> class iDynArray
+iDynArray& operator = (const iDynArray &a)
 {
-if (this == &a) 	return *this;
-Options=a.Options;
-SetCount(a.Count); 
-memcpy(Array, a.Array, sizeof(el)*a.Count);
-kGrow=a.kGrow;
-return *this;
+    // 1. Check for self-assignment (e.g., array1 = array1)
+    if (this == &a) return *this;
+
+    // 2. Copy the configuration fields
+    Options = a.Options;
+    kGrow = a.kGrow;
+
+    // 3. Resize our internal buffer to hold the new items
+    SetCount(a.Count); 
+
+    // 4. Copy the raw memory bytes safely
+    if (a.Count > 0 && a.Array != NULL)
+    {
+        memcpy(Array, a.Array, sizeof(el) * a.Count);
+    }
+
+    // 5. Return a reference to this array object
+    return *this;
 }
+
 
 
 
@@ -83,18 +96,11 @@ memcpy(Array, a.Array, sizeof(el)*a.AllocatedCount);
 }
 
 Count = a.Count;
-
-
-
-
-
-
 kGrow=a.kGrow;
 OnSortCompare= NULL;
 }
 
-iDynArray(unsigned int AllocateCount=0, float kGrowth=0.3 )
-{
+
 iDynArray(unsigned int AllocateCount = 0, float kGrowth = 0.3f)
 {
     Array = NULL;
@@ -115,7 +121,7 @@ if (AllocateCount > UINT_MAX / sizeof(el)) throw exception { MEMFAIL,OUTOFMEMORY
     }
 }
 
-}
+
 
 
 
