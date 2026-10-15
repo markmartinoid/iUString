@@ -6,16 +6,16 @@
 
 #include <iDynArray.h>
 
-#ifdef _WINDOWS_
-#define iPATH_SEPARATOR '\\'
-
-#elif
-#define iPATH_SEPARATOR '/'
-
+#if defined(_WIN32) || defined(_WIN64)
+    #define iPATH_SEPARATOR '\\'
+#elif defined(__linux__) || defined(__APPLE__)
+    #define iPATH_SEPARATOR '/'
+#else
+    #error "Unknown platform"
 #endif
 
-
-
+typedef unsigned long long i_uint64;
+typedef unsigned int i_uint32;
 
 /*
 string to_utf8(const wchar_t* buffer, int len)
@@ -183,7 +183,7 @@ static char const HEXDIGITS[0x10] = {'0', '1', '2', '3', '4', '5', '6', '7','8',
 
 
 
-void uint64_to_hexstring(ULONGLONG value, char result[17])
+void uint64_to_hexstring(i_uint64 value, char result[17])
 {
 static char const HEXDIGITS[0x10] = {'0', '1', '2', '3', '4', '5', '6', '7','8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     int i;
@@ -270,7 +270,7 @@ return  result;
 
 
 
-ULONGLONG hexalpha_to_uint64(const unsigned char c)
+i_uint64 hexalpha_to_uint64(const unsigned char c)
 {
 
 if((c >= '0') && (c <= '9')) {return (c- '0');}
@@ -292,10 +292,10 @@ unsigned char  answer = 0;
 
 
 
-ULONGLONG hexstring_to_uint64(const char* str,uint32_t length )
+i_uint64 hexstring_to_uint64(const char* str,uint32_t length )
 {
-ULONGLONG  result=0;
-ULONGLONG power=0;
+i_uint64  result=0;
+i_uint64 power=0;
 for(int i=length-1;i>=0;i--)
 {
 result|=hexalpha_to_uint64(str[i])<<power;

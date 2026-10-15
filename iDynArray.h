@@ -12,7 +12,8 @@
 
 inline int  _OnUShortCompare(unsigned short x1,unsigned short x2)  {return (x1-x2);}
 
-
+// Определяем кроссплатформенный тип
+typedef unsigned long long i_uint64;
 
 
 

@@ -10,7 +10,7 @@
 #include <codecvt>   // для кроссплатформенной конвертации UTF-8 / UTF-16
 #include <locale>    // для wstring_convert
 
-// Заменяем специфичный для Windows ULONGLONG на стандартный тип C++
+// Заменяем специфичный для Windows i_uint64 на стандартный тип C++
 typedef unsigned long long i_uint64; 
 
 #ifndef _StringType_DEFINED
@@ -136,10 +136,10 @@ return retval;
 }
 
 
-template <typename StringType>ULONGLONG iStrAsUInt64(const StringType* str,unsigned int str_max_index)
+template <typename StringType>i_uint64 iStrAsUInt64(const StringType* str,unsigned int str_max_index)
 {
-ULONGLONG retval=0;
-ULONGLONG power=1;
+i_uint64 retval=0;
+i_uint64 power=1;
 unsigned int i=str_max_index;
 do
 {
@@ -273,7 +273,7 @@ enum exception { MEMFAIL,OUTOFBOUND,TOBIGSIE };
  iString(const iString<StringType> &str)
 { 
 data=NULL;Length=0;Allocated=0;
-if(&str== NULL){return;};
+//if(&str== NULL){return;}; incorrect check coz link cant be a null, detected by Alice/Yandex
 SetLength(str.Length);
 memcpy(data,str.data,Length*sizeof(StringType));
 }
@@ -358,14 +358,14 @@ if(NewAllocated==0)
  }else{
  StringType* new_ptr = (StringType*)realloc(data, sizeof(StringType)*NewAllocated); 
  if (new_ptr == NULL) 
-  {Allocated=0;Length=0; throw MEMFAIL;return; }
+  {Allocated=0;Length=0; free(data);data=NULL; throw MEMFAIL; return; }
  data=new_ptr;  
  if(Allocated==0){data[0]=0;}
  }
 Allocated = NewAllocated;
 }
 
-const StringType* Buffer()
+const StringType* Buffer() const 
 {
 return data;
 }
@@ -856,7 +856,7 @@ int AsInt()
 return iStrAsUInt<StringType>(data,Length-1);
 }
 
-ULONGLONG AsUInt64()   
+i_uint64 AsUInt64()   
 {
 return iStrAsUInt64<StringType>(data,Length-1);
 }
